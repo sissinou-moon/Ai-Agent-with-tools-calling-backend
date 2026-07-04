@@ -63,4 +63,123 @@ class NotionService:
 
         return token_data
 
-    
+    async def list_databases(self, access_token: str):
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://api.notion.com/v1/search",
+                headers={
+                    "Authorization": f"Bearer {access_token}",
+                    "Notion-Version": "2022-06-28",
+                },
+                json={
+                    "filter": {
+                        "property": "object",
+                        "value": "database"
+                    }
+                }
+            )
+
+        if response.status_code != 200:
+            raise HTTPException(
+                status_code=400,
+                detail=response.json(),
+            )
+
+        result = response.json()
+        structured_response = []
+
+        for database in result["results"]:
+            structured_response.append({
+                "title": database["title"][0]["plain_text"],
+                "id": database["id"],
+                "properties": database["properties"]
+            })
+
+
+        return structured_response
+
+    async def add_row_database(
+        self,
+        access_token: str,
+        database_id: str,
+        properties: dict,
+        schema: dict
+    ):
+        structured_properties = {}
+
+        # 1️⃣ Normalize Title (Text)
+        if "Title" in schema:
+            title_schema = schema["Title"]
+            if title_schema["type"] == "title" and "Title" in properties:
+                structured_properties["Title"] = {"title": [{"text": {"content": properties["Title"]}}]}
+                del properties["Title"]
+
+        # 2️⃣ Handle Each Column Based on Type
+        for name, value in properties.items():
+            if name not in schema:
+                # Skip columns that don't exist in the schema
+                continue
+
+            prop_type = schema[name]["type"]
+
+            if prop_type == "title":
+                # Already handled above, but safe to keep
+                structured_properties[name] = {"title": [{"text": {"content": str(value)}}]}
+
+            elif prop_type == "rich_text":
+                structured_properties[name] = {"rich_text": [{"text": {"content": str(value)}}]}
+
+            elif prop_type == "number":
+                structured_properties[name] = {"number": float(value)}
+
+            elif prop_type == "checkbox":
+                structured_properties[name] = {"checkbox": bool(value)}
+
+            elif prop_type == "select":
+                structured_properties[name] = {
+                    "select": {"name": str(value)}
+                }
+
+            elif prop_type == "multi_select":
+                if isinstance(value, list):
+                    structured_properties[name] = {"multi_select": [{"name": str(v)} for v in value]}
+                else:
+                    # Handle single string input
+                    structured_properties[name] = {"multi_select": [{"name": str(value)}]}
+
+            elif prop_type == "date":
+                # Handle ISO format or timestamp
+                structured_properties[name] = {"date": {"start": str(value)}}
+
+            elif prop_type == "email":
+                structured_properties[name] = {"email": str(value)}
+
+            elif prop_type == "phone":
+                structured_properties[name] = {"phone_number": str(value)}
+
+            elif prop_type == "url":
+                structured_properties[name] = {"url": str(value)}
+
+        # 3️⃣ Add the database_id → parent
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://api.notion.com/v1/pages",
+                headers={
+                    "Authorization": f"Bearer {access_token}",
+                    "Notion-Version": "2022-06-28",
+                },
+                json={
+                    "parent": {
+                        "database_id": database_id
+                    },
+                    "properties": structured_properties
+                }
+            )
+
+        if response.status_code != 200:
+            raise HTTPException(
+                status_code=response.status_code,
+                detail=response.json(),
+            )
+
+        return response.json()

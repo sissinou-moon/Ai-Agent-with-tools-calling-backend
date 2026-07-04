@@ -49,26 +49,27 @@ TOOLS = [
 },
 
 {
-    "type": "function",
-    "function": {
-        "name": "notion_add_row_database",
-        "description": "Create a new row (page) inside a Notion database. The properties object must match the database schema.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "database_id": {
-                    "type": "string"
-                },
-                "properties": {
-                    "type": "object"
-                }
-            },
-            "required": [
-                "database_id",
-                "properties"
-            ]
+  "type": "function",
+  "function": {
+    "name": "notion_add_row_database",
+    "description": "Create a new row in a Notion database. The AI should provide only the column values. The backend will convert them to the correct Notion property format using the database schema.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "database_id": {
+          "type": "string"
+        },
+        "values": {
+          "type": "object",
+          "description": "Dictionary mapping database column names to their values. Example: {\"Order\":\"#1024\",\"Customer\":\"John Doe\",\"Total\":42.5,\"Paid\":true}"
         }
+      },
+      "required": [
+        "database_id",
+        "values"
+      ]
     }
+  }
 },
 
 {
@@ -76,25 +77,6 @@ TOOLS = [
     "function": {
         "name": "notion_list_databases",
         "description": "List all databases the user has access to in Notion. Use this whenever you need to locate a database by its name before adding, updating, or querying rows.",
-    }
-},
-
-{
-    "type": "function",
-    "function": {
-        "name": "notion_get_database_schema",
-        "description": "Retrieve the properties (columns), property types, and available select options for a Notion database. Use this before creating a new row if you do not already know the database schema.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "database_id": {
-                    "type": "string"
-                },
-            },
-            "required": [
-                "database_id"
-            ]
-        }
     }
 },
 
