@@ -8,6 +8,10 @@ class Settings(BaseSettings):
     NOTION_CLIENT_SECRET: str
     NOTION_REDIRECT_URL: str
 
+    GITHUB_CLIENT_ID: str
+    GITHUB_CLIENT_SECRET: str
+    GITHUB_REDIRECT_URI: str
+
     model_config = SettingsConfigDict(
         env_file=".env",
         extra="ignore",

@@ -30,21 +30,30 @@ TOOLS = [
 {
     "type": "function",
     "function": {
-        "name": "github_list_pull_requests",
-        "description": "List pull requests from a GitHub repository.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "repository": {
-                    "type": "string"
-                },
-                "state": {
-                    "type": "string",
-                    "enum": ["open", "closed", "all"]
-                }
-            },
-            "required": ["repository"]
-        }
+      "name": "github_search_code",
+      "description": "Searches a GitHub repository for files matching a code query. The query can contain function names, class names, variable names, imports, filenames, keywords, or code snippets. Returns matching file paths and metadata so the assistant can inspect the relevant files.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "owner": {
+            "type": "string",
+            "description": "GitHub repository owner."
+          },
+          "repo": {
+            "type": "string",
+            "description": "Repository name."
+          },
+          "query": {
+            "type": "string",
+            "description": "GitHub code search query."
+          }
+        },
+        "required": [
+          "owner",
+          "repo",
+          "query"
+        ]
+      }
     }
 },
 
