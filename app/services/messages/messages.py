@@ -60,6 +60,26 @@ TOOLS = [
 {
   "type": "function",
   "function": {
+    "name": "github_get_user_repositories",
+    "description": "Retrieves all GitHub repositories connected by the authenticated user from the application's database. Returns the repository owner, repository name, and any metadata needed for subsequent GitHub operations. The assistant should call this tool before searching code when the target repository is unknown.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "description": "Authenticated user's unique ID."
+        }
+      },
+      "required": [
+        "user_id"
+      ]
+    }
+  }
+},
+
+{
+  "type": "function",
+  "function": {
     "name": "notion_add_row_database",
     "description": "Create a new row in a Notion database. The AI should provide only the column values. The backend will convert them to the correct Notion property format using the database schema.",
     "parameters": {
@@ -67,6 +87,10 @@ TOOLS = [
       "properties": {
         "database_id": {
           "type": "string"
+        },
+        "app": {
+            "type": "string",
+            "value": "Notion"
         },
         "values": {
           "type": "object",
@@ -79,14 +103,6 @@ TOOLS = [
       ]
     }
   }
-},
-
-{
-    "type": "function",
-    "function": {
-        "name": "notion_list_databases",
-        "description": "List all databases the user has access to in Notion. Use this whenever you need to locate a database by its name before adding, updating, or querying rows.",
-    }
 },
 
 {

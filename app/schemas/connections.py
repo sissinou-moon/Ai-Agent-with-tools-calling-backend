@@ -18,3 +18,9 @@ class UpdateConnection(BaseModel):
     app: str
     access_token: str | None = None
     data: dict | None = None
+
+class GmailSendRequest(BaseModel):
+    access_token: str
+    to: str
+    subject: str 
+    body: str

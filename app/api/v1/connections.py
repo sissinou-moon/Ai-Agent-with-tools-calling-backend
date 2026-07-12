@@ -1,3 +1,5 @@
+from app.schemas.connections import GmailSendRequest
+from app.services.connections.gmail_services import GmailService
 from app.schemas.connections import UpdateConnection
 from app.schemas.connections import GithubSearchRequest
 from app.services.connections.github_services import GitHubService
@@ -93,3 +95,30 @@ async def github_user(body: dict, current_user=Depends(get_current_user), db = D
         return updateConnection
     except Exception as e:
         return {"error": str(e)}
+
+
+@router.get("/gmail/oauth")
+async def gmail_oauth():
+    return GmailService().gmail_oauth()
+
+@router.get("/gmail/callback")
+async def gmail_callback(code: str, state: str):
+    return await GmailService().exchange_code(code, state)
+
+@router.post("/gmail/send")
+async def gmail_send(body: GmailSendRequest, current_user=Depends(get_current_user), db = Depends(get_db)):
+    access_token = body.access_token
+    to = body.to
+    subject = body.subject 
+    body = body.body
+    user_id = current_user.get("sub")
+    try:
+        return await GmailService().send_email(access_token, to, subject, body)
+    except Exception as e:
+        return {"error": str(e)}
+
+@router.get("/events")
+async def get_events(current_user=Depends(get_current_user), db = Depends(get_db)):
+    user_id = current_user.get("sub")
+    return await ConnectionService(db).get_events(user_id)
+

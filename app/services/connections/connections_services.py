@@ -45,3 +45,12 @@ class ConnectionService:
             connection.access_token = body.access_token
         
         await self.db.commit()
+
+    async def get_events(self, user_id: str):
+        events = await self.connection_repository.read_events_by_user_id(user_id)
+        
+        if not events:
+            return []
+        
+        return events
+        
