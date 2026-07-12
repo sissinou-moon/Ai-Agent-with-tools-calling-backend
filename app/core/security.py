@@ -32,6 +32,14 @@ def create_refresh_token(user_id: str):
 
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
+def create_webhook_token(user_id: str):
+    payload = {
+        "sub": str(user_id),
+        "type": "token",
+    }
+
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
 def verify_refresh_token(refresh_token: str) -> bool:
     try:
         payload = jwt.decode(
@@ -70,6 +78,21 @@ def verify_access_token(token: str):
     except InvalidTokenError:
         return None
         
+def verify_webhook_token(webhook_token: str):
+    try:
+        payload = jwt.decode(
+            webhook_token,
+            SECRET_KEY,
+            algorithms=[ALGORITHM]
+        )
+
+        if payload.get("type") != "token":
+            return None
+
+        return payload
+
+    except InvalidTokenError:
+        return None
 
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
